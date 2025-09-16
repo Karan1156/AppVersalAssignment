@@ -10,7 +10,7 @@ import {
     Tooltip,
     Legend
 } from 'recharts';
-import { MapContainer, TileLayer, Polygon, Popup, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Popup, Marker, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -32,13 +32,87 @@ const indiaIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-// Simplified coordinates for India's outline (more accurate representation)
+// More accurate coordinates for India's outline
 const indiaCoordinates = [
-    [37.06, 68.18], // Northwest
-    [37.06, 97.42], // Northeast
-    [6.75, 97.42],  // Southeast
-    [6.75, 68.18],  // Southwest
-    [37.06, 68.18]  // Back to Northwest
+    [37.06, 68.18], // Jammu & Kashmir
+    [32.76, 74.85], // Punjab border
+    [27.70, 81.65], // Uttar Pradesh border
+    [23.70, 68.90], // Gujarat
+    [15.50, 73.80], // Goa
+    [8.10, 77.55],  // Tamil Nadu
+    [7.95, 93.55],  // Andaman Islands
+    [27.50, 96.85], // Arunachal Pradesh
+    [28.50, 77.25], // New Delhi
+    [37.06, 68.18]  // Back to start
+];
+
+// Major Indian cities with performance data
+const indianCities = [
+    {
+        name: 'Mumbai',
+        position: [19.0760, 72.8777],
+        performance: 88,
+        details: {
+            clicks: 4200,
+            impressions: 65000,
+            spend: 1500,
+            conversions: 125,
+            ctr: 6.5,
+            revenue: 4800
+        }
+    },
+    {
+        name: 'Delhi',
+        position: [28.7041, 77.1025],
+        performance: 82,
+        details: {
+            clicks: 3800,
+            impressions: 58000,
+            spend: 1350,
+            conversions: 110,
+            ctr: 6.6,
+            revenue: 4200
+        }
+    },
+    {
+        name: 'Bangalore',
+        position: [12.9716, 77.5946],
+        performance: 91,
+        details: {
+            clicks: 3200,
+            impressions: 45000,
+            spend: 1100,
+            conversions: 95,
+            ctr: 7.1,
+            revenue: 3800
+        }
+    },
+    {
+        name: 'Chennai',
+        position: [13.0827, 80.2707],
+        performance: 79,
+        details: {
+            clicks: 1800,
+            impressions: 28000,
+            spend: 650,
+            conversions: 55,
+            ctr: 6.4,
+            revenue: 2100
+        }
+    },
+    {
+        name: 'Kolkata',
+        position: [22.5726, 88.3639],
+        performance: 75,
+        details: {
+            clicks: 1500,
+            impressions: 22000,
+            spend: 550,
+            conversions: 45,
+            ctr: 6.8,
+            revenue: 1800
+        }
+    }
 ];
 
 // Sample data for other countries to show on world map
@@ -130,9 +204,6 @@ const ChartsSection = () => {
         { name: 'Jun', clicks: 3450, impressions: 50000, spend: 4500, conversions: 340 },
     ];
 
-    // Custom tooltip formatter for currency
-    const formatCurrency = (value) => `$${value.toLocaleString()}`;
-
     return (
         <div className="space-y-6 mb-6">
             {/* Time Range Selector */}
@@ -156,36 +227,38 @@ const ChartsSection = () => {
                     <h2 className="font-semibold text-gray-700 mb-4">Global Performance Overview</h2>
                     <div className="h-96 rounded-md overflow-hidden relative">
                         <MapContainer
-                            center={[20, 0]}
-                            zoom={2}
+                            center={[23, 80]}
+                            zoom={4}
                             style={{ height: '100%', width: '100%' }}
-                            zoomControl={true}
+                            zoomControl={false}
                             className="rounded-lg"
-                            minZoom={2}
+                            minZoom={3}
                             maxBounds={[[-90, -180], [90, 180]]}
                             maxBoundsViscosity={1.0}
+                            scrollWheelZoom={true}
                         >
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
+                            <ZoomControl position="bottomright" />
 
-                            {/* India outline */}
+                            {/* India outline with more accurate shape */}
                             <Polygon
                                 positions={indiaCoordinates}
                                 pathOptions={{
                                     color: '#ff7300',
                                     fillColor: '#ff7300',
-                                    fillOpacity: 0.6,
+                                    fillOpacity: 0.4,
                                     weight: 2,
                                 }}
                             >
-                                <Popup>
+                                <Popup className="custom-popup">
                                     <div className="text-sm">
-                                        <h3 className="font-bold text-lg mb-2">India Performance</h3>
+                                        <h3 className="font-bold text-lg mb-2">India Performance Summary</h3>
                                         <div className="space-y-1">
                                             <div className="flex justify-between">
-                                                <span className="text-gray-600">Overall:</span>
+                                                <span className="text-gray-600">Overall Performance:</span>
                                                 <span className="font-semibold">{indiaData.performance}%</span>
                                             </div>
                                             <div className="flex justify-between">
@@ -204,27 +277,57 @@ const ChartsSection = () => {
                                                 <span className="text-gray-600">Revenue:</span>
                                                 <span className="font-semibold">${indiaData.details.revenue.toLocaleString()}</span>
                                             </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">ROI:</span>
+                                                <span className="font-semibold">
+                                                    {((indiaData.details.revenue / indiaData.details.spend) * 100).toFixed(1)}%
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </Popup>
                             </Polygon>
 
-                            {/* Marker for India */}
-                            <Marker position={indiaData.position} icon={indiaIcon}>
-                                <Popup>
-                                    <div className="text-sm">
-                                        <h3 className="font-bold">India</h3>
-                                        <p>Performance: {indiaData.performance}%</p>
-                                        <p>Spend: ${indiaData.details.spend.toLocaleString()}</p>
-                                        <p>Revenue: ${indiaData.details.revenue.toLocaleString()}</p>
-                                    </div>
-                                </Popup>
-                            </Marker>
+                            {/* Markers for Indian cities */}
+                            {indianCities.map((city, index) => (
+                                <Marker
+                                    key={`city-${index}`}
+                                    position={city.position}
+                                    icon={new L.Icon({
+                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                        iconSize: [20, 32],
+                                        iconAnchor: [10, 32],
+                                        popupAnchor: [1, -28],
+                                        shadowSize: [32, 32]
+                                    })}
+                                >
+                                    <Popup>
+                                        <div className="text-sm">
+                                            <h3 className="font-bold">{city.name}</h3>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between">
+                                                    <span>Performance:</span>
+                                                    <span className="font-semibold">{city.performance}%</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Spend:</span>
+                                                    <span className="font-semibold">${city.details.spend.toLocaleString()}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Revenue:</span>
+                                                    <span className="font-semibold">${city.details.revenue.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            ))}
 
                             {/* Markers for other countries */}
                             {countriesData.map((country, index) => (
                                 <Marker
-                                    key={index}
+                                    key={`country-${index}`}
                                     position={country.position}
                                     icon={new L.Icon({
                                         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -270,7 +373,11 @@ const ChartsSection = () => {
                             <div className="space-y-1">
                                 <div className="flex items-center">
                                     <div className="w-4 h-4 rounded-full mr-2 bg-orange-500"></div>
-                                    <span className="text-xs">India (Highlighted)</span>
+                                    <span className="text-xs">India Region</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-3 h-3 rounded-full mr-2 bg-green-500"></div>
+                                    <span className="text-xs">Indian Cities</span>
                                 </div>
                                 <div className="flex items-center">
                                     <div className="w-4 h-4 rounded-full mr-2 bg-blue-500"></div>
