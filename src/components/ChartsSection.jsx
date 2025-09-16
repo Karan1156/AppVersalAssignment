@@ -1,5 +1,5 @@
 // components/ChartsSection.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     ResponsiveContainer,
     LineChart,
@@ -10,7 +10,7 @@ import {
     Tooltip,
     Legend
 } from 'recharts';
-import { MapContainer, TileLayer, Polygon, Popup, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Popup, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import L from 'leaflet';
@@ -31,48 +31,23 @@ const indiaIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-// Simplified coordinates for India's outline (more accurate representation)
+// Blue icon for other countries
+const blueIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+// More accurate coordinates for India's outline
 const indiaCoordinates = [
-    [37.06, 68.18], // Northwest
-    [37.06, 97.42], // Northeast
-    [6.75, 97.42],  // Southeast
-    [6.75, 68.18],  // Southwest
-    [37.06, 68.18]  // Back to Northwest
+    [37.06, 68.18], [32.5, 75.8], [28.0, 70.0], [23.7, 68.1],
+    [20.0, 70.0], [15.0, 74.0], [8.0, 77.0], [6.8, 82.0],
+    [10.0, 92.0], [21.0, 92.0], [27.5, 96.0], [28.5, 97.4],
+    [37.06, 97.42], [37.06, 68.18]
 ];
-
-// FitWorld helper: waits for map ready, invalidates size and fits the entire world
-const FitWorld = ({ padding = [20, 20] }) => {
-    const map = useMap();
-    useEffect(() => {
-        if (!map) return;
-
-        const onReady = () => {
-            // make sure size is correct then fit the whole world
-            map.invalidateSize(false);
-            // fitWorld ensures whole world is shown
-            if (typeof map.fitWorld === 'function') {
-                map.fitWorld({ padding });
-            } else {
-                // fallback to fitBounds if fitWorld not available
-                map.fitBounds([[-90, -180], [90, 180]], { padding });
-            }
-        };
-
-        map.whenReady(onReady);
-
-        // also handle window resize so the world view remains visible on layout changes
-        const onResize = () => {
-            map.invalidateSize(false);
-            if (typeof map.fitWorld === 'function') map.fitWorld({ padding });
-            else map.fitBounds([[-90, -180], [90, 180]], { padding });
-        };
-        window.addEventListener('resize', onResize);
-
-        return () => window.removeEventListener('resize', onResize);
-    }, [map, padding]);
-
-    return null;
-};
 
 const ChartsSection = () => {
     const [timeRange, setTimeRange] = useState('last6months');
@@ -93,11 +68,10 @@ const ChartsSection = () => {
         }
     };
 
-    // ... other data (kept same as yours) ...
     const countriesData = [
         {
             name: 'United States',
-            position: [37.0902, -95.7129],
+            position: [39.8283, -98.5795], // Center of US
             performance: 92,
             fill: '#00C49F',
             details: {
@@ -185,17 +159,20 @@ const ChartsSection = () => {
                     <h2 className="font-semibold text-gray-700 mb-4">Global Performance Overview</h2>
                     <div className="h-96 rounded-md overflow-hidden relative">
                         <MapContainer
+                            center={[20, 0]}
+                            zoom={2}
                             style={{ height: '100%', width: '100%' }}
+                            minZoom={2}
+                            maxBounds={[[-90, -180], [90, 180]]}
+                            maxBoundsViscosity={1.0}
+                            worldCopyJump={true}
                             className="rounded-lg"
-                            zoomControl={false} // hide zoom controls if you don't want them
                         >
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                noWrap={false}
                             />
-
-                            {/* Fit the world after map is ready */}
-                            <FitWorld />
 
                             {/* India outline */}
                             <Polygon
@@ -253,14 +230,7 @@ const ChartsSection = () => {
                                 <Marker
                                     key={index}
                                     position={country.position}
-                                    icon={new L.Icon({
-                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                                        iconSize: [25, 41],
-                                        iconAnchor: [12, 41],
-                                        popupAnchor: [1, -34],
-                                        shadowSize: [41, 41]
-                                    })}
+                                    icon={blueIcon}
                                 >
                                     <Popup>
                                         <div className="text-sm">
@@ -292,7 +262,7 @@ const ChartsSection = () => {
                         </MapContainer>
 
                         {/* Map overlay legend */}
-                        <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-50">
+                        <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-[500]">
                             <h4 className="text-xs font-semibold mb-2">Performance Legend</h4>
                             <div className="space-y-1">
                                 <div className="flex items-center">
