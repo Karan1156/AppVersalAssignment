@@ -1,5 +1,5 @@
 // components/ChartsSection.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ResponsiveContainer,
     LineChart,
@@ -10,10 +10,9 @@ import {
     Tooltip,
     Legend
 } from 'recharts';
-import { MapContainer, TileLayer, Polygon, Popup, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Popup, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default markers in react-leaflet
 import L from 'leaflet';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -41,65 +40,39 @@ const indiaCoordinates = [
     [37.06, 68.18]  // Back to Northwest
 ];
 
-// Sample data for other countries to show on world map
-const countriesData = [
-    {
-        name: 'United States',
-        position: [37.0902, -95.7129],
-        performance: 92,
-        fill: '#00C49F',
-        details: {
-            clicks: 18500,
-            impressions: 245000,
-            spend: 8200,
-            conversions: 520,
-            ctr: 7.6,
-            revenue: 21500
-        }
-    },
-    {
-        name: 'United Kingdom',
-        position: [55.3781, -3.4360],
-        performance: 78,
-        fill: '#0088FE',
-        details: {
-            clicks: 8500,
-            impressions: 120000,
-            spend: 3100,
-            conversions: 210,
-            ctr: 7.1,
-            revenue: 9800
-        }
-    },
-    {
-        name: 'Australia',
-        position: [-25.2744, 133.7751],
-        performance: 85,
-        fill: '#FFBB28',
-        details: {
-            clicks: 7200,
-            impressions: 95000,
-            spend: 2800,
-            conversions: 180,
-            ctr: 7.6,
-            revenue: 8500
-        }
-    },
-    {
-        name: 'Germany',
-        position: [51.1657, 10.4515],
-        performance: 76,
-        fill: '#FF8042',
-        details: {
-            clicks: 6800,
-            impressions: 88000,
-            spend: 2400,
-            conversions: 150,
-            ctr: 7.7,
-            revenue: 7200
-        }
-    }
-];
+// FitWorld helper: waits for map ready, invalidates size and fits the entire world
+const FitWorld = ({ padding = [20, 20] }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (!map) return;
+
+        const onReady = () => {
+            // make sure size is correct then fit the whole world
+            map.invalidateSize(false);
+            // fitWorld ensures whole world is shown
+            if (typeof map.fitWorld === 'function') {
+                map.fitWorld({ padding });
+            } else {
+                // fallback to fitBounds if fitWorld not available
+                map.fitBounds([[-90, -180], [90, 180]], { padding });
+            }
+        };
+
+        map.whenReady(onReady);
+
+        // also handle window resize so the world view remains visible on layout changes
+        const onResize = () => {
+            map.invalidateSize(false);
+            if (typeof map.fitWorld === 'function') map.fitWorld({ padding });
+            else map.fitBounds([[-90, -180], [90, 180]], { padding });
+        };
+        window.addEventListener('resize', onResize);
+
+        return () => window.removeEventListener('resize', onResize);
+    }, [map, padding]);
+
+    return null;
+};
 
 const ChartsSection = () => {
     const [timeRange, setTimeRange] = useState('last6months');
@@ -120,7 +93,66 @@ const ChartsSection = () => {
         }
     };
 
-    // India performance trend data with spend
+    // ... other data (kept same as yours) ...
+    const countriesData = [
+        {
+            name: 'United States',
+            position: [37.0902, -95.7129],
+            performance: 92,
+            fill: '#00C49F',
+            details: {
+                clicks: 18500,
+                impressions: 245000,
+                spend: 8200,
+                conversions: 520,
+                ctr: 7.6,
+                revenue: 21500
+            }
+        },
+        {
+            name: 'United Kingdom',
+            position: [55.3781, -3.4360],
+            performance: 78,
+            fill: '#0088FE',
+            details: {
+                clicks: 8500,
+                impressions: 120000,
+                spend: 3100,
+                conversions: 210,
+                ctr: 7.1,
+                revenue: 9800
+            }
+        },
+        {
+            name: 'Australia',
+            position: [-25.2744, 133.7751],
+            performance: 85,
+            fill: '#FFBB28',
+            details: {
+                clicks: 7200,
+                impressions: 95000,
+                spend: 2800,
+                conversions: 180,
+                ctr: 7.6,
+                revenue: 8500
+            }
+        },
+        {
+            name: 'Germany',
+            position: [51.1657, 10.4515],
+            performance: 76,
+            fill: '#FF8042',
+            details: {
+                clicks: 6800,
+                impressions: 88000,
+                spend: 2400,
+                conversions: 150,
+                ctr: 7.7,
+                revenue: 7200
+            }
+        }
+    ];
+
     const indiaTrendData = [
         { name: 'Jan', clicks: 1850, impressions: 28000, spend: 2800, conversions: 210 },
         { name: 'Feb', clicks: 2100, impressions: 32000, spend: 3100, conversions: 235 },
@@ -129,9 +161,6 @@ const ChartsSection = () => {
         { name: 'May', clicks: 3120, impressions: 45500, spend: 4150, conversions: 315 },
         { name: 'Jun', clicks: 3450, impressions: 50000, spend: 4500, conversions: 340 },
     ];
-
-    // Custom tooltip formatter for currency
-    const formatCurrency = (value) => `$${value.toLocaleString()}`;
 
     return (
         <div className="space-y-6 mb-6">
@@ -155,19 +184,18 @@ const ChartsSection = () => {
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                     <h2 className="font-semibold text-gray-700 mb-4">Global Performance Overview</h2>
                     <div className="h-96 rounded-md overflow-hidden relative">
-                       <MapContainer
-    bounds={[[-90, -180], [90, 180]]}
-    style={{ height: '100%', width: '100%' }}
-    zoomControl={true}
-    className="rounded-lg"
-    maxBounds={[[-90, -180], [90, 180]]}
-    maxBoundsViscosity={1.0}
->
-
+                        <MapContainer
+                            style={{ height: '100%', width: '100%' }}
+                            className="rounded-lg"
+                            zoomControl={false} // hide zoom controls if you don't want them
+                        >
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                             />
+
+                            {/* Fit the world after map is ready */}
+                            <FitWorld />
 
                             {/* India outline */}
                             <Polygon
@@ -264,7 +292,7 @@ const ChartsSection = () => {
                         </MapContainer>
 
                         {/* Map overlay legend */}
-                        <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-500">
+                        <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-50">
                             <h4 className="text-xs font-semibold mb-2">Performance Legend</h4>
                             <div className="space-y-1">
                                 <div className="flex items-center">
