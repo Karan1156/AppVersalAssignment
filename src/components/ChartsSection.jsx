@@ -155,16 +155,15 @@ const ChartsSection = () => {
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                     <h2 className="font-semibold text-gray-700 mb-4">Global Performance Overview</h2>
                     <div className="h-96 rounded-md overflow-hidden relative">
-                        <MapContainer
-                            center={[20, 0]}
-                            zoom={2}
-                            style={{ height: '100%', width: '100%' }}
-                            zoomControl={true}
-                            className="rounded-lg"
-                            minZoom={2}
-                            maxBounds={[[-90, -180], [90, 180]]}
-                            maxBoundsViscosity={1.0}
-                        >
+                       <MapContainer
+    bounds={[[-90, -180], [90, 180]]}
+    style={{ height: '100%', width: '100%' }}
+    zoomControl={true}
+    className="rounded-lg"
+    maxBounds={[[-90, -180], [90, 180]]}
+    maxBoundsViscosity={1.0}
+>
+
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
