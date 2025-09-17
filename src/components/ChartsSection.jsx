@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polygon, ZoomControl, useMap } from 'react-leaflet';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -110,18 +110,21 @@ const indiaData = {
   }
 };
 
+// Component to handle map initialization and resizing
+function MapEffect() {
+  const map = useMap();
+  
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }, [map]);
+
+  return null;
+}
+
 const GlobalDashboard = () => {
   const [timeRange, setTimeRange] = useState('last6months');
-  const mapRef = useRef();
-
-  // Fix for map sizing issues
-  useEffect(() => {
-    if (mapRef.current) {
-      setTimeout(() => {
-        mapRef.current.invalidateSize();
-      }, 100);
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -152,8 +155,8 @@ const GlobalDashboard = () => {
                 zoom={2}
                 style={{ height: '100%', width: '100%' }}
                 zoomControl={false}
-                ref={mapRef}
               >
+                <MapEffect />
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -208,7 +211,7 @@ const GlobalDashboard = () => {
               </MapContainer>
 
               {/* Map legend */}
-              <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-1000">
+              <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-50">
                 <h4 className="text-xs font-semibold mb-2">Performance Legend</h4>
                 <div className="space-y-1">
                   <div className="flex items-center">
