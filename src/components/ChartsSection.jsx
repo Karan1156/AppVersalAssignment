@@ -226,146 +226,69 @@ const ChartsSection = () => {
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                     <h2 className="font-semibold text-gray-700 mb-4">Global Performance Overview</h2>
                     <div className="h-96 rounded-md overflow-hidden relative">
-                        <MapContainer
-                            center={[23, 80]}
-                            zoom={4}
-                            style={{ height: '100%', width: '100%' }}
-                            zoomControl={false}
-                            className="rounded-lg"
-                            minZoom={3}
-                            maxBounds={[[-90, -180], [90, 180]]}
-                            maxBoundsViscosity={1.0}
-                            scrollWheelZoom={true}
-                        >
-                            <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                            <ZoomControl position="bottomright" />
+                       <MapContainer
+    center={[20, 0]}
+    zoom={2}
+    style={{ height: '100%', width: '100%' }}
+    zoomControl={false}
+    className="rounded-lg"
+    minZoom={2}
+    maxBounds={[[-90, -180], [90, 180]]}
+    maxBoundsViscosity={1.0}
+    scrollWheelZoom={true}
+>
+    <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    />
+    <ZoomControl position="bottomright" />
 
-                            {/* India outline with more accurate shape */}
-                            <Polygon
-                                positions={indiaCoordinates}
-                                pathOptions={{
-                                    color: '#ff7300',
-                                    fillColor: '#ff7300',
-                                    fillOpacity: 0.4,
-                                    weight: 2,
-                                }}
-                            >
-                                <Popup className="custom-popup">
-                                    <div className="text-sm">
-                                        <h3 className="font-bold text-lg mb-2">India Performance Summary</h3>
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Overall Performance:</span>
-                                                <span className="font-semibold">{indiaData.performance}%</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Clicks:</span>
-                                                <span className="font-semibold">{indiaData.details.clicks.toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Impressions:</span>
-                                                <span className="font-semibold">{indiaData.details.impressions.toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Spend:</span>
-                                                <span className="font-semibold">${indiaData.details.spend.toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Revenue:</span>
-                                                <span className="font-semibold">${indiaData.details.revenue.toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">ROI:</span>
-                                                <span className="font-semibold">
-                                                    {((indiaData.details.revenue / indiaData.details.spend) * 100).toFixed(1)}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Popup>
-                            </Polygon>
+    {/* India outline */}
+    <Polygon
+        positions={indiaCoordinates}
+        pathOptions={{
+            color: '#ff7300',
+            fillColor: '#ff7300',
+            fillOpacity: 0.4,
+            weight: 2,
+        }}
+    >
+        <Popup>
+            <div className="text-sm">
+                <h3 className="font-bold text-lg mb-2">India Performance Summary</h3>
+                <p>Performance: {indiaData.performance}%</p>
+                <p>Clicks: {indiaData.details.clicks.toLocaleString()}</p>
+                <p>Revenue: ${indiaData.details.revenue.toLocaleString()}</p>
+            </div>
+        </Popup>
+    </Polygon>
 
-                            {/* Markers for Indian cities */}
-                            {indianCities.map((city, index) => (
-                                <Marker
-                                    key={`city-${index}`}
-                                    position={city.position}
-                                    icon={new L.Icon({
-                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                                        iconSize: [20, 32],
-                                        iconAnchor: [10, 32],
-                                        popupAnchor: [1, -28],
-                                        shadowSize: [32, 32]
-                                    })}
-                                >
-                                    <Popup>
-                                        <div className="text-sm">
-                                            <h3 className="font-bold">{city.name}</h3>
-                                            <div className="space-y-1">
-                                                <div className="flex justify-between">
-                                                    <span>Performance:</span>
-                                                    <span className="font-semibold">{city.performance}%</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Spend:</span>
-                                                    <span className="font-semibold">${city.details.spend.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Revenue:</span>
-                                                    <span className="font-semibold">${city.details.revenue.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Popup>
-                                </Marker>
-                            ))}
+    {/* Other countries */}
+    {countriesData.map((country, index) => (
+        <Marker
+            key={`country-${index}`}
+            position={country.position}
+            icon={new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })}
+        >
+            <Popup>
+                <div className="text-sm">
+                    <h3 className="font-bold">{country.name}</h3>
+                    <p>Performance: {country.performance}%</p>
+                    <p>Spend: ${country.details.spend.toLocaleString()}</p>
+                    <p>Revenue: ${country.details.revenue.toLocaleString()}</p>
+                </div>
+            </Popup>
+        </Marker>
+    ))}
+</MapContainer>
 
-                            {/* Markers for other countries */}
-                            {countriesData.map((country, index) => (
-                                <Marker
-                                    key={`country-${index}`}
-                                    position={country.position}
-                                    icon={new L.Icon({
-                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                                        iconSize: [25, 41],
-                                        iconAnchor: [12, 41],
-                                        popupAnchor: [1, -34],
-                                        shadowSize: [41, 41]
-                                    })}
-                                >
-                                    <Popup>
-                                        <div className="text-sm">
-                                            <h3 className="font-bold">{country.name}</h3>
-                                            <div className="space-y-1">
-                                                <div className="flex justify-between">
-                                                    <span>Performance:</span>
-                                                    <span className="font-semibold">{country.performance}%</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Spend:</span>
-                                                    <span className="font-semibold">${country.details.spend.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Revenue:</span>
-                                                    <span className="font-semibold">${country.details.revenue.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>ROI:</span>
-                                                    <span className="font-semibold">
-                                                        {((country.details.revenue / country.details.spend) * 100).toFixed(1)}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Popup>
-                                </Marker>
-                            ))}
-                        </MapContainer>
 
                         {/* Map overlay legend */}
                         <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md z-500">
